@@ -1,28 +1,33 @@
-def highest_bit(nums, index):
-    ones_count = sum(x[index] for x in nums)
-    return int(ones_count >= (len(nums) / 2))
+import itertools
+
+def split(nums, index):
+    "split nums into two lists based on item at position index"
+    a, b = itertools.tee(nums)
+    return ([item for item in a if item[index] == 0],
+            [item for item in b if item[index] == 1])
+
+def most_common(zeros, ones):
+    "return the largest list"
+    return zeros if len(zeros) > len(ones) else ones
+
+def least_common(zeros, ones):
+    "return the smallest list"
+    return zeros if len(zeros) <= len(ones) else ones
+
+def filter_nums(nums, pred, index=0):
+    zeros, ones = split(nums, index)
+    nums = pred(zeros, ones)
+    return nums[0] if len(nums) == 1 else filter_nums(nums, pred, index + 1)
+
+def digit_list_to_int(l):
+    "turn list of binary digits (e.g. [0, 1, 0, 1]) into int"
+    return int("".join(str(x) for x in l), 2)
 
 def oxygen_generator_rating(numbers):
-    def filter_oxygen(nums, index=0):
-        bit = highest_bit(nums, index)
-
-        nums = [n for n in nums if bit == n[index]]
-        if len(nums) == 1:
-            return nums[0]
-        return filter_oxygen(nums, index + 1)
-
-    return int("".join(str(x) for x in filter_oxygen(numbers)), 2)
+    return digit_list_to_int(filter_nums(numbers, most_common))
 
 def co2_scrubber_rating(numbers):
-    def filter_co2(nums, index=0):
-        bit = highest_bit(nums, index)
-
-        nums = [n for n in nums if bit != n[index]]
-        if len(nums) == 1:
-            return nums[0]
-        return filter_co2(nums, index + 1)
-
-    return int("".join(str(x) for x in filter_co2(numbers)), 2)
+    return digit_list_to_int(filter_nums(numbers, least_common))
 
 def main():
     with open('input3.txt') as f:
