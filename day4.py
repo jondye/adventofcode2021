@@ -1,4 +1,5 @@
-from pprint import pformat
+from pprint import pformat, pprint
+from copy import deepcopy
 
 class Board:
     def __init__(self, rows):
@@ -23,6 +24,25 @@ class Board:
         return pformat(self.rows)
 
 
+def day4_1(calls, boards):
+    for c in calls:
+        for index, board in enumerate(boards):
+            board.call(c)
+            if board.bingo():
+                print(f"Bingo (board {index+1})")
+                print(board.unmarked_sum() * c)
+                return
+
+def day4_2(calls, boards):
+    for n, c in enumerate(calls):
+        for board in boards:
+            board.call(c)
+        boards = [b for b in boards if not b.bingo()]
+        if len(boards) == 1:
+            last_board = boards[0]
+        if len(boards) == 0:
+            return c, last_board
+
 def main():
     boards = []
     calls = []
@@ -35,15 +55,10 @@ def main():
                 rows.append([int(x) for x in f.readline().strip().split()])
             boards.append(Board(rows))
 
-    for c in calls:
-        for index, board in enumerate(boards):
-            board.call(c)
-            if board.bingo():
-                print(f"Bingo (board {index+1})")
-                print(board.unmarked_sum() * c)
-                return
-
-
+    day4_1(calls, deepcopy(boards))
+    last_call, last_board = day4_2(calls, deepcopy(boards))
+    print(f"Last board score is {last_board.unmarked_sum() * last_call}")
+    return
 
 if __name__ == '__main__':
     main()
