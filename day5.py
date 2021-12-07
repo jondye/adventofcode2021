@@ -4,17 +4,27 @@ from collections import defaultdict
 
 
 class OceanFloor:
-    def __init__(self, lines):
+    def __init__(self, lines, include_diagonal=False):
         self.lines = lines
         self.floor = defaultdict(lambda: defaultdict(int))
-        for ((start_x, start_y), (end_x, end_y)) in lines:
-            if (start_x != end_x and start_y != end_y):
+
+        def compare(a, b):
+            if a > b:
+                return 1
+            if a < b:
+                return -1
+            return 0
+
+        for (x, y), (end_x, end_y) in lines:
+            x_step = compare(end_x, x)
+            y_step = compare(end_y, y)
+            if not include_diagonal and (x_step and y_step):
                 continue
-            x_step = 1 if end_x > start_x else -1
-            for x in range(start_x, end_x + x_step, x_step):
-                y_step = 1 if end_y > start_y else -1
-                for y in range(start_y, end_y + y_step, y_step):
-                    self.floor[x][y] += 1
+            steps = max(abs(x - end_x), abs(y - end_y))
+            for _ in range(steps + 1):
+                self.floor[x][y] += 1
+                x += x_step
+                y += y_step
 
     def overlapping_points(self):
         return sum(1 for x in self.floor.values() for y in x.values() if y > 1)
@@ -32,11 +42,17 @@ def day5_1(lines):
     return floor.overlapping_points()
 
 
+def day5_2(lines):
+    floor = OceanFloor(lines, include_diagonal=True)
+    return floor.overlapping_points()
+
+
 def main():
     with open('input5.txt') as f:
         lines = read_input(f)
 
     print(f"{day5_1(lines)} overlapping points")
+    print(f"{day5_2(lines)} overlapping points including diagonals")
 
 
 if __name__ == '__main__':
